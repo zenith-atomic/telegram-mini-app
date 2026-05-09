@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Mission Control</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0f1117;
+  --bg-card: #1a1d27;
+  --border: #2a2d3a;
+  --text-primary: #e8eaf0;
+  --text-secondary: #8b90a0;
+  --accent: #3b82f6;
+  --accent-dim: #1d4ed8;
+  --green: #22c55e;
+  --amber: #eab308;
+  --red: #ef4444;
+  --purple: #a855f7;
+  --cyan: #06b6d4;
+  --radius: 12px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+  background: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 16px;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.header h1 { font-size: 16px; font-weight: 600; }
+.header .badge { font-size: 11px; background: var(--accent-dim); color: #fff; padding: 2px 8px; border-radius: 20px; }
+.section { margin-bottom: 16px; }
+.section-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  text-align: center;
+}
+.stat .value { font-size: 28px; font-weight: 700; color: var(--accent); }
+.stat .label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.stage-list { display: flex; flex-direction: column; gap: 6px; }
+.stage-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.stage-status {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--text-secondary);
+  flex-shrink: 0;
+}
+.stage-status.pending { background: var(--text-secondary); }
+.stage-status.running { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
+.stage-status.done { background: var(--green); }
+.stage-status.error { background: var(--red); }
+.stage-name { flex: 1; font-size: 13px; font-weight: 500; }
+.stage-week { font-size: 11px; color: var(--text-secondary); }
+.agent-list { display: flex; flex-direction: column; gap: 6px; }
+.agent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+.agent-row:active { opacity: 0.7; }
+.agent-emoji { font-size: 18px; }
+.agent-info { flex: 1; }
+.agent-name { font-size: 13px; font-weight: 500; }
+.agent-role { font-size: 11px; color: var(--text-secondary); }
+.agent-status { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
+.agent-status.idle { background: #1f2937; color: var(--text-secondary); }
+.agent-status.running { background: #1d4ed840; color: var(--cyan); }
+.agent-status.done { background: #22c55e20; color: var(--green); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.btn:active { opacity: 0.8; }
+.btn.danger { background: var(--red); }
+.btn.secondary { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); }
+.btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.hidden { display: none; }
+.refresh-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.refresh-bar .status { font-size: 12px; color: var(--text-secondary); }
+#refresh-btn { padding: 8px 14px; font-size: 12px; }
+.loading { text-align: center; padding: 20px; color: var(--text-secondary); font-size: 13px; }
+.error-msg { background: #ef444420; border: 1px solid var(--red); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--red); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚀 Mission Control</h1>
+  <span class="badge" id="week-label">W19</span>
+</div>
+
+<!-- Stats Grid -->
+<div class="card-grid" style="margin-bottom:16px">
+  <div class="stat"><div class="value" id="stat-drafts">—</div><div class="label">Drafts</div></div>
+  <div class="stat"><div class="value" id="stat-kpis">—</div><div class="label">KPIs</div></div>
+</div>
+
+<!-- Pipeline Stages -->
+<div class="section">
+  <div class="section-header">Pipeline</div>
+  <div class="stage-list" id="stages">
+    <div class="loading">Loading...</div>
+  </div>
+</div>
+
+<!-- Agents -->
+<div class="section">
+  <div class="section-header">Agents</div>
+  <div class="agent-list" id="agents">
+    <div class="loading">Loading...</div>
+  </div>
+</div>
+
+<!-- Actions -->
+<div class="section">
+  <div class="section-header">Actions</div>
+  <button class="btn" id="btn-run-pipeline">▶ Run Full Pipeline</button>
+  <div class="btn-group">
+    <button class="btn secondary" id="btn-reset-writing">Reset Writing</button>
+    <button class="btn secondary" id="btn-reset-publishing">Reset Publishing</button>
+  </div>
+  <button class="btn danger" id="btn-kill-stale">Kill Stale Agents</button>
+</div>
+
+<!-- Status Bar -->
+<div class="refresh-bar">
+  <span class="status" id="last-update">Last updated: —</span>
+  <button class="btn secondary" id="refresh-btn">↻ Refresh</button>
+</div>
+
+<script>
+const API = 'http://localhost:3700';
+const tg = window.Telegram?.WebApp;
+tg?.ready();
+
+async function api(path) {
+  try {
+    const r = await fetch(API + path);
+    if (!r.ok) throw new Error(r.status);
+    return await r.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+function timeAgo(ts) {
+  const s = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return Math.floor(s/60) + 'm ago';
+  return Math.floor(s/3600) + 'h ago';
+}
+
+async function refresh() {
+  const [status, agents] = await Promise.all([api('/api/status'), api('/api/agents')]);
+  if (!status) {
+    document.getElementById('stages').innerHTML = '<div class="error-msg">Factory dashboard offline</div>';
+    return;
+  }
+  document.getElementById('week-label').textContent = status.week || '—';
+  document.getElementById('stat-drafts').textContent = status.draftCount ?? '—';
+  document.getElementById('stat-kpis').textContent = status.kpiCount ?? '—';
+  const stages = ['research','strategy','writing','visuals','publishing','analytics','evolution'];
+  const stageEmojis = { research:'🔍', strategy:'🎯', writing:'✍️', visuals:'🎨', publishing:'📤', analytics:'📊', evolution:'🧬' };
+  document.getElementById('stages').innerHTML = stages.map(s => {
+    const st = status.stages?.[s] || {};
+    return `<div class="stage-row">
+      <div class="stage-status ${st.status||'pending'}"></div>
+      <span class="stage-name">${stageEmojis[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</span>
+      <span class="stage-week">${st.status||'—'}</span>
+    </div>`;
+  }).join('');
+
+  if (agents) {
+    document.getElementById('agents').innerHTML = agents.map(a => `
+      <div class="agent-row" onclick="agentAction('${a.id}')">
+        <span class="agent-emoji">${a.emoji||'🤖'}</span>
+        <div class="agent-info">
+          <div class="agent-name">${a.name}</div>
+          <div class="agent-role">${a.role||''}</div>
+        </div>
+        <span class="agent-status ${a.status||'idle'}">${a.status||'idle'}</span>
+      </div>
+    `).join('');
+  }
+  document.getElementById('last-update').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+}
+
+async function post(path, body) {
+  try {
+    const r = await fetch(API + path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
+    return r.ok;
+  } catch { return false; }
+}
+
+document.getElementById('btn-run-pipeline').onclick = async () => {
+  const ok = await post('/api/pipeline/run', {});
+  if (ok) { tg?.HapticFeedback?.notification('success'); refresh(); }
+  else { tg?.HapticFeedback?.notification('error'); alert('Failed'); }
+};
+document.getElementById('btn-reset-writing').onclick = async () => {
+  await post('/api/pipeline/reset/writing', {});
+  refresh();
+};
+document.getElementById('btn-reset-publishing').onclick = async () => {
+  await post('/api/pipeline/reset/publishing', {});
+  refresh();
+};
+document.getElementById('btn-kill-stale').onclick = async () => {
+  if (!confirm('Kill all running agents?')) return;
+  const r = await fetch(API + '/api/agents/kill-stale', { method:'POST' });
+  refresh();
+};
+document.getElementById('refresh-btn').onclick = () => { tg?.HapticFeedback?.impact('light'); refresh(); };
+
+function agentAction(id) {
+  tg?.HapticFeedback?.impact('medium');
+  alert('Agent: ' + id + '\nActions coming soon');
+}
+
+refresh();
+setInterval(refresh, 60000);
+</script>
+</body>
+</html>
