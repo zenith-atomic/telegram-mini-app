@@ -203,6 +203,7 @@ const API = params.get('api') || DEFAULT_API;
 const tg = window.Telegram?.WebApp;
 tg?.ready();
 let selectedWeek = params.get('week') || '';
+let weeksLoaded = false;
 
 async function api(path) {
   const sep = path.includes('?') ? '&' : '?';
@@ -224,13 +225,14 @@ function timeAgo(ts) {
 }
 
 async function refresh() {
-  // Populate week selector first time
-  if (!selectedWeek) {
+  // Populate week selector once, even when week was passed in URL
+  if (!weeksLoaded) {
     const weeks = await api('/api/weeks');
     const sel = document.getElementById('week-select');
     if (weeks && weeks.length) {
-      sel.innerHTML = weeks.map(w => `<option value="${w}"${w === weeks[0] ? ' selected' : ''}>${w.replace('2026-','')}</option>`).join('');
-      selectedWeek = weeks[0];
+      if (!selectedWeek) selectedWeek = weeks[0];
+      sel.innerHTML = weeks.map(w => `<option value="${w}"${w === selectedWeek ? ' selected' : ''}>${w.replace('2026-','')}</option>`).join('');
+      weeksLoaded = true;
     }
   }
   const status = await api('/api/status');
