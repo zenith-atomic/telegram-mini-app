@@ -1,317 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Mission Control</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Factory Mission Control</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0f1117;
-  --bg-card: #1a1d27;
-  --border: #2a2d3a;
-  --text-primary: #e8eaf0;
-  --text-secondary: #8b90a0;
-  --accent: #3b82f6;
-  --accent-dim: #1d4ed8;
-  --green: #22c55e;
-  --amber: #eab308;
-  --red: #ef4444;
-  --purple: #a855f7;
-  --cyan: #06b6d4;
-  --radius: 12px;
-}
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
-  background: var(--bg);
-  color: var(--text-primary);
-  min-height: 100vh;
-  padding: 16px;
-}
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  background: var(--bg-card);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-}
-.header h1 { font-size: 16px; font-weight: 600; }
-.header .badge { font-size: 11px; background: var(--accent-dim); color: #fff; padding: 2px 8px; border-radius: 20px; }
-.section { margin-bottom: 16px; }
-.section-header {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-  padding-left: 4px;
-}
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 8px;
-}
-.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.stat {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  text-align: center;
-}
-.stat .value { font-size: 28px; font-weight: 700; color: var(--accent); }
-.stat .label { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
-.stage-list { display: flex; flex-direction: column; gap: 6px; }
-.stage-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--bg-card);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-}
-.stage-status {
-  width: 10px; height: 10px; border-radius: 50%;
-  background: var(--text-secondary);
-  flex-shrink: 0;
-}
-.stage-status.pending { background: var(--text-secondary); }
-.stage-status.running { background: var(--cyan); box-shadow: 0 0 6px var(--cyan); }
-.stage-status.done { background: var(--green); }
-.stage-status.error { background: var(--red); }
-.stage-name { flex: 1; font-size: 13px; font-weight: 500; }
-.stage-week { font-size: 11px; color: var(--text-secondary); }
-.agent-list { display: flex; flex-direction: column; gap: 6px; }
-.agent-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: var(--bg-card);
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  cursor: pointer;
-}
-.agent-row:active { opacity: 0.7; }
-.agent-emoji { font-size: 18px; }
-.agent-info { flex: 1; }
-.agent-name { font-size: 13px; font-weight: 500; }
-.agent-role { font-size: 11px; color: var(--text-secondary); }
-.agent-status { font-size: 11px; padding: 2px 8px; border-radius: 20px; }
-.agent-status.idle { background: #1f2937; color: var(--text-secondary); }
-.agent-status.running { background: #1d4ed840; color: var(--cyan); }
-.agent-status.done { background: #22c55e20; color: var(--green); }
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-  margin-bottom: 8px;
-}
-.btn:active { opacity: 0.8; }
-.btn.danger { background: var(--red); }
-.btn.secondary { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-primary); }
-.btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.hidden { display: none; }
-.refresh-bar {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: var(--bg-card);
-  border-top: 1px solid var(--border);
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.refresh-bar .status { font-size: 12px; color: var(--text-secondary); }
-#refresh-btn { padding: 8px 14px; font-size: 12px; }
-.loading { text-align: center; padding: 20px; color: var(--text-secondary); font-size: 13px; }
-.error-msg { background: #ef444420; border: 1px solid var(--red); border-radius: 8px; padding: 10px 14px; font-size: 12px; color: var(--red); margin-bottom: 10px; }
+:root{--bg:#070a0f;--panel:#0d1117;--panel2:#111827;--border:#213044;--text:#e6edf3;--muted:#7d8797;--cyan:#00d9ff;--green:#00ff88;--amber:#ffb800;--red:#ff3b3b;--blue:#3b82f6;--radius:14px;--mono:'SF Mono','JetBrains Mono',ui-monospace,monospace}*{box-sizing:border-box}body{margin:0;padding:14px 14px 78px;background:radial-gradient(circle at 20% -10%,#10324a55,transparent 35%),linear-gradient(180deg,#070a0f,#0b0e14);color:var(--text);font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.brand{display:flex;flex-direction:column}.brand b{font-size:14px;letter-spacing:.9px}.brand span{font-size:10px;color:var(--muted);text-transform:uppercase}.clock{font:700 18px var(--mono);color:var(--cyan);text-shadow:0 0 14px #00d9ff66}.toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}select,.cmd{background:#0b1220;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px}button{border:0;border-radius:10px;padding:10px 12px;background:var(--blue);color:white;font-weight:700;font-size:12px;letter-spacing:.2px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.card{background:linear-gradient(180deg,#101722,#0c1118);border:1px solid var(--border);border-radius:var(--radius);padding:12px;box-shadow:0 8px 30px #0005}.metric{border-left:3px solid var(--cyan)}.metric .label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}.metric .value{font:800 28px var(--mono);margin-top:4px}.metric .delta{font-size:10px;color:var(--green);margin-top:2px}.section{margin-top:14px}.section h2{font-size:11px;margin:0 0 8px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}.log{max-height:210px;overflow:auto;font:12px var(--mono);line-height:1.4}.logrow{padding:8px 0;border-bottom:1px solid #1f293733}.logrow b{color:var(--cyan)}.pipeline{display:grid;gap:7px}.stage{display:flex;align-items:center;gap:9px;padding:10px;background:#0b1220;border:1px solid var(--border);border-radius:10px}.dot{width:10px;height:10px;border-radius:999px;background:var(--muted)}.dot.done{background:var(--green);box-shadow:0 0 10px #00ff8877}.dot.pending{background:var(--amber)}.stage span:nth-child(2){flex:1;font-size:13px}.stage small{color:var(--muted);font-size:11px}.agents{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.agent{padding:11px;border:1px solid var(--border);border-radius:12px;background:#0b1220}.agent .name{font-weight:800;font-size:13px}.agent .role{font-size:10px;color:var(--muted)}.badge{display:inline-block;margin-top:7px;font-size:10px;border-radius:999px;padding:3px 8px;background:#1f2937;color:#cbd5e1}.badge.done{background:#053d2b;color:var(--green)}.badge.idle{background:#1f2937;color:#9ca3af}.approval{display:grid;gap:8px}.post{background:#0b1220;border:1px solid var(--border);border-radius:12px;padding:11px}.posthead{display:flex;justify-content:space-between;gap:8px;font-size:11px;color:var(--muted);margin-bottom:6px}.posttxt{font-size:12px;line-height:1.35;white-space:pre-wrap;max-height:72px;overflow:hidden}.postactions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.approve{background:#0f7a4b}.skip{background:#7f1d1d}.commandbar{position:fixed;left:0;right:0;bottom:0;background:#090d13;border-top:1px solid var(--border);padding:10px 12px;display:grid;grid-template-columns:1fr auto;gap:8px}.hidden{display:none}.err{color:var(--red);font-size:12px}.pulse{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-right:6px;box-shadow:0 0 10px #00ff88}@media(max-width:420px){body{padding:12px 10px 78px}.metric .value{font-size:24px}.agents{grid-template-columns:1fr}.top{align-items:flex-start}.clock{font-size:15px}}
 </style>
 </head>
 <body>
-
-<div class="header">
-  <h1>🚀 Mission Control</h1>
-  <select id="week-select" style="background:#1a1d27;color:#e8eaf0;border:1px solid #2a2d3a;border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer;">
-    <option value="">Loading weeks...</option>
-  </select>
-</div>
-
-<!-- Stats Grid -->
-<div class="card-grid" style="margin-bottom:16px">
-  <div class="stat"><div class="value" id="stat-drafts">—</div><div class="label">Drafts</div></div>
-  <div class="stat"><div class="value" id="stat-kpis">—</div><div class="label">KPIs</div></div>
-  <div class="stat"><div class="value" id="stat-posts">—</div><div class="label">Queued Posts</div></div>
-  <div class="stat"><div class="value" id="stat-api">●</div><div class="label">API Live</div></div>
-</div>
-
-<!-- Pipeline Stages -->
-<div class="section">
-  <div class="section-header">Pipeline</div>
-  <div class="stage-list" id="stages">
-    <div class="loading">Loading...</div>
+  <div class="top">
+    <div class="brand"><b>◇ FACTORY MISSION CONTROL</b><span>marketing situation room</span></div>
+    <div class="clock" id="clock">--:--:--</div>
   </div>
-</div>
+  <div class="toolbar"><select id="week-select"><option>Acquiring weeks...</option></select><button id="refresh">SYNC</button></div>
 
-<!-- Agents -->
-<div class="section">
-  <div class="section-header">Agents</div>
-  <div class="agent-list" id="agents">
-    <div class="loading">Loading...</div>
+  <div class="grid">
+    <div class="card metric"><div class="label">Pipeline</div><div class="value" id="m-pipeline">—</div><div class="delta">mission stages</div></div>
+    <div class="card metric"><div class="label">Queued</div><div class="value" id="m-posts">—</div><div class="delta">approval inbox</div></div>
+    <div class="card metric"><div class="label">Pending</div><div class="value" id="m-pending">—</div><div class="delta">needs human</div></div>
+    <div class="card metric"><div class="label">API</div><div class="value" id="m-api">●</div><div class="delta" id="api-label">checking</div></div>
   </div>
-</div>
 
-<!-- Actions -->
-<div class="section">
-  <div class="section-header">Actions</div>
-  <button class="btn" id="btn-run-pipeline">▶ Run Full Pipeline</button>
-  <div class="btn-group">
-    <button class="btn secondary" id="btn-reset-writing">Reset Writing</button>
-    <button class="btn secondary" id="btn-reset-publishing">Reset Publishing</button>
-  </div>
-  <button class="btn danger" id="btn-kill-stale">Kill Stale Agents</button>
-</div>
+  <section class="section"><h2>Comms Log</h2><div class="card log" id="events">ACQUIRING SIGNAL...</div></section>
+  <section class="section"><h2>Approval Inbox</h2><div class="approval" id="approval">Loading posts...</div></section>
+  <section class="section"><h2>Pipeline</h2><div class="pipeline" id="pipeline"></div></section>
+  <section class="section"><h2>Agent Status</h2><div class="agents" id="agents"></div></section>
 
-<!-- Status Bar -->
-<div class="refresh-bar">
-  <span class="status" id="last-update">Last updated: —</span>
-  <button class="btn secondary" id="refresh-btn">↻ Refresh</button>
-</div>
-
+  <div class="commandbar"><input class="cmd" id="cmd" placeholder="LAUNCH COMMAND..."/><button id="sendcmd">SEND</button></div>
 <script>
-const params = new URLSearchParams(location.search);
-const DEFAULT_API = 'https://bullet-weekend-acm-leasing.trycloudflare.com';
-const API = params.get('api') || DEFAULT_API;
-const tg = window.Telegram?.WebApp;
-tg?.ready();
-let selectedWeek = params.get('week') || '';
-let weeksLoaded = false;
-
-async function api(path) {
-  const sep = path.includes('?') ? '&' : '?';
-  const weekParam = selectedWeek ? (path.includes('week=') ? '' : sep + 'week=' + selectedWeek) : '';
-  try {
-    const r = await fetch(API + path + weekParam);
-    if (!r.ok) throw new Error(r.status);
-    return await r.json();
-  } catch (e) {
-    return null;
-  }
-}
-
-function timeAgo(ts) {
-  const s = Math.floor((Date.now() - new Date(ts).getTime()) / 1000);
-  if (s < 60) return 'just now';
-  if (s < 3600) return Math.floor(s/60) + 'm ago';
-  return Math.floor(s/3600) + 'h ago';
-}
-
-async function refresh() {
-  // Populate week selector once, even when week was passed in URL
-  if (!weeksLoaded) {
-    const weeks = await api('/api/weeks');
-    const sel = document.getElementById('week-select');
-    if (weeks && weeks.length) {
-      if (!selectedWeek) selectedWeek = weeks[0];
-      sel.innerHTML = weeks.map(w => `<option value="${w}"${w === selectedWeek ? ' selected' : ''}>${w.replace('2026-','')}</option>`).join('');
-      weeksLoaded = true;
-    }
-  }
-  const status = await api('/api/status');
-  const agents = await api('/api/agents');
-  const queue = await api('/api/queue');
-  if (!status) {
-    document.getElementById('stages').innerHTML = '<div class="error-msg">Factory dashboard offline</div>';
-    return;
-  }
-  document.getElementById('week-select').value = selectedWeek;
-  document.getElementById('week-select').onchange = () => {
-    selectedWeek = document.getElementById('week-select').value;
-    history.replaceState(null, '', '?week=' + encodeURIComponent(selectedWeek));
-    refresh();
-  };
-  document.getElementById('stat-drafts').textContent = status.draftCount ?? '—';
-  document.getElementById('stat-kpis').textContent = status.kpiCount ?? '—';
-  document.getElementById('stat-posts').textContent = queue?.posts?.length ?? 0;
-  document.getElementById('stat-api').style.color = 'var(--green)';
-  const stages = ['research','strategy','writing','visuals','publishing','analytics','evolution'];
-  const stageEmojis = { research:'🔍', strategy:'🎯', writing:'✍️', visuals:'🎨', publishing:'📤', analytics:'📊', evolution:'🧬' };
-  document.getElementById('stages').innerHTML = stages.map(s => {
-    const st = status.stages?.[s] || {};
-    return `<div class="stage-row">
-      <div class="stage-status ${st.status||'pending'}"></div>
-      <span class="stage-name">${stageEmojis[s]} ${s.charAt(0).toUpperCase()+s.slice(1)}</span>
-      <span class="stage-week">${st.status||'—'}</span>
-    </div>`;
-  }).join('');
-
-  if (agents) {
-    document.getElementById('agents').innerHTML = agents.map(a => `
-      <div class="agent-row" onclick="agentAction('${a.id}')">
-        <span class="agent-emoji">${a.emoji||'🤖'}</span>
-        <div class="agent-info">
-          <div class="agent-name">${a.name}</div>
-          <div class="agent-role">${a.role||''}</div>
-        </div>
-        <span class="agent-status ${a.status||'idle'}">${a.status||'idle'}</span>
-      </div>
-    `).join('');
-  }
-  document.getElementById('last-update').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
-}
-
-async function post(path, body) {
-  try {
-    const r = await fetch(API + path, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{}) });
-    return r.ok;
-  } catch { return false; }
-}
-
-document.getElementById('btn-run-pipeline').onclick = async () => {
-  const ok = await post('/api/pipeline/run', {});
-  if (ok) { tg?.HapticFeedback?.notification('success'); refresh(); }
-  else { tg?.HapticFeedback?.notification('error'); alert('Failed'); }
-};
-document.getElementById('btn-reset-writing').onclick = async () => {
-  await post('/api/pipeline/reset/writing', {});
-  refresh();
-};
-document.getElementById('btn-reset-publishing').onclick = async () => {
-  await post('/api/pipeline/reset/publishing', {});
-  refresh();
-};
-document.getElementById('btn-kill-stale').onclick = async () => {
-  if (!confirm('Kill all running agents?')) return;
-  const r = await fetch(API + '/api/agents/kill-stale', { method:'POST' });
-  refresh();
-};
-document.getElementById('refresh-btn').onclick = () => { tg?.HapticFeedback?.impact('light'); refresh(); };
-
-function agentAction(id) {
-  tg?.HapticFeedback?.impact('medium');
-  alert('Agent: ' + id + '\nActions coming soon');
-}
-
-refresh();
-setInterval(refresh, 60000);
+const params=new URLSearchParams(location.search);const DEFAULT_API='https://bullet-weekend-acm-leasing.trycloudflare.com';const API=params.get('api')||DEFAULT_API;const tg=window.Telegram?.WebApp;tg?.ready();let selectedWeek=params.get('week')||'';let weeksLoaded=false;const stages=['research','strategy','writing','visuals','publishing','analytics','evolution'];const icons={research:'🔍',strategy:'🎯',writing:'✍️',visuals:'🎨',publishing:'📤',analytics:'📊',evolution:'🧬'};
+function tick(){document.getElementById('clock').textContent=new Date().toLocaleTimeString([], {hour12:false});}setInterval(tick,1000);tick();
+async function api(path,opts){const sep=path.includes('?')?'&':'?';const wp=selectedWeek&&!path.includes('week=')?sep+'week='+encodeURIComponent(selectedWeek):'';const r=await fetch(API+path+wp,opts);if(!r.ok)throw new Error(r.status);return r.json();}
+function esc(s){return String(s||'').replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+async function loadWeeks(){if(weeksLoaded)return;const weeks=await api('/api/weeks');if(!selectedWeek)selectedWeek=weeks[0];document.getElementById('week-select').innerHTML=weeks.map(w=>`<option value="${w}" ${w===selectedWeek?'selected':''}>${w.replace('2026-','')}</option>`).join('');weeksLoaded=true;}
+async function refresh(){try{await loadWeeks();const [status,agents,queue,health,events]=await Promise.all([api('/api/status'),api('/api/agents'),api('/api/queue'),api('/api/health'),api('/api/events')]);document.getElementById('m-pipeline').textContent=`${health.pipeline_done}/${health.pipeline_total}`;document.getElementById('m-posts').textContent=health.posts_total;document.getElementById('m-pending').textContent=health.posts_pending;document.getElementById('m-api').style.color='var(--green)';document.getElementById('api-label').textContent='nominal';document.getElementById('pipeline').innerHTML=stages.map(s=>`<div class="stage"><i class="dot ${status.stages?.[s]?.status||'pending'}"></i><span>${icons[s]} ${s[0].toUpperCase()+s.slice(1)}</span><small>${status.stages?.[s]?.status||'pending'}</small></div>`).join('');document.getElementById('agents').innerHTML=agents.map(a=>`<div class="agent"><div class="name">${a.emoji||'🤖'} ${esc(a.name)}</div><div class="role">${esc(a.role)}</div><span class="badge ${a.status}">${a.status==='done'?'● NOMINAL':a.status==='running'?'◐ ENGAGED':'○ IDLE'}</span></div>`).join('');document.getElementById('events').innerHTML=events.events.map(e=>`<div class="logrow"><b>[${new Date(e.ts).toLocaleTimeString([], {hour12:false})}]</b> ${e.type==='success'?'✓':e.type==='warning'?'⚠':'◇'} ${esc(e.title)}<br><span style="color:var(--muted)">${esc(e.detail)}</span></div>`).join('')||'NO ACTIVE TRANSMISSIONS';const posts=queue.posts||[];document.getElementById('approval').innerHTML=posts.slice(0,8).map((p,i)=>{const id=(p._file||`post_${i+1}.json`).replace(/\.json$/,'');return `<div class="post"><div class="posthead"><b>${esc(p.platform)}</b><span>${esc(p.status||'pending')}</span></div><div class="posttxt">${esc(p.content)}</div><div class="postactions"><button class="approve" onclick="decide('${id}','approve')">APPROVE</button><button class="skip" onclick="decide('${id}','skip')">SKIP</button></div></div>`}).join('')||'<div class="card">NO POSTS IN QUEUE</div>';}catch(e){document.getElementById('m-api').style.color='var(--red)';document.getElementById('api-label').textContent='offline';document.getElementById('events').innerHTML=`<div class="err">LINK DOWN: ${esc(e.message)}</div>`;}}
+async function decide(id,action){await api(`/api/queue/${id}/${action}`,{method:'POST'});tg?.HapticFeedback?.notification('success');refresh();}
+document.getElementById('week-select').onchange=e=>{selectedWeek=e.target.value;history.replaceState(null,'','?week='+encodeURIComponent(selectedWeek));refresh();};document.getElementById('refresh').onclick=refresh;document.getElementById('sendcmd').onclick=async()=>{const input=document.getElementById('cmd');if(!input.value.trim())return;await api('/api/command',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:input.value})});input.value='';refresh();};refresh();setInterval(refresh,30000);
 </script>
 </body>
 </html>
