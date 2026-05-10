@@ -150,13 +150,17 @@ body {
 
 <div class="header">
   <h1>🚀 Mission Control</h1>
-  <span class="badge" id="week-label">W19</span>
+  <select id="week-select" style="background:#1a1d27;color:#e8eaf0;border:1px solid #2a2d3a;border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer;">
+    <option value="">Loading weeks...</option>
+  </select>
 </div>
 
 <!-- Stats Grid -->
 <div class="card-grid" style="margin-bottom:16px">
   <div class="stat"><div class="value" id="stat-drafts">—</div><div class="label">Drafts</div></div>
   <div class="stat"><div class="value" id="stat-kpis">—</div><div class="label">KPIs</div></div>
+  <div class="stat"><div class="value" id="stat-posts">—</div><div class="label">Queued Posts</div></div>
+  <div class="stat"><div class="value" id="stat-api">●</div><div class="label">API Live</div></div>
 </div>
 
 <!-- Pipeline Stages -->
@@ -193,13 +197,18 @@ body {
 </div>
 
 <script>
-const API = 'http://localhost:3700';
+const params = new URLSearchParams(location.search);
+const DEFAULT_API = 'https://bullet-weekend-acm-leasing.trycloudflare.com';
+const API = params.get('api') || DEFAULT_API;
 const tg = window.Telegram?.WebApp;
 tg?.ready();
+let selectedWeek = params.get('week') || '';
 
 async function api(path) {
+  const sep = path.includes('?') ? '&' : '?';
+  const weekParam = selectedWeek ? (path.includes('week=') ? '' : sep + 'week=' + selectedWeek) : '';
   try {
-    const r = await fetch(API + path);
+    const r = await fetch(API + path + weekParam);
     if (!r.ok) throw new Error(r.status);
     return await r.json();
   } catch (e) {
@@ -215,14 +224,32 @@ function timeAgo(ts) {
 }
 
 async function refresh() {
-  const [status, agents] = await Promise.all([api('/api/status'), api('/api/agents')]);
+  // Populate week selector first time
+  if (!selectedWeek) {
+    const weeks = await api('/api/weeks');
+    const sel = document.getElementById('week-select');
+    if (weeks && weeks.length) {
+      sel.innerHTML = weeks.map(w => `<option value="${w}"${w === weeks[0] ? ' selected' : ''}>${w.replace('2026-','')}</option>`).join('');
+      selectedWeek = weeks[0];
+    }
+  }
+  const status = await api('/api/status');
+  const agents = await api('/api/agents');
+  const queue = await api('/api/queue');
   if (!status) {
     document.getElementById('stages').innerHTML = '<div class="error-msg">Factory dashboard offline</div>';
     return;
   }
-  document.getElementById('week-label').textContent = status.week || '—';
+  document.getElementById('week-select').value = selectedWeek;
+  document.getElementById('week-select').onchange = () => {
+    selectedWeek = document.getElementById('week-select').value;
+    history.replaceState(null, '', '?week=' + encodeURIComponent(selectedWeek));
+    refresh();
+  };
   document.getElementById('stat-drafts').textContent = status.draftCount ?? '—';
   document.getElementById('stat-kpis').textContent = status.kpiCount ?? '—';
+  document.getElementById('stat-posts').textContent = queue?.posts?.length ?? 0;
+  document.getElementById('stat-api').style.color = 'var(--green)';
   const stages = ['research','strategy','writing','visuals','publishing','analytics','evolution'];
   const stageEmojis = { research:'🔍', strategy:'🎯', writing:'✍️', visuals:'🎨', publishing:'📤', analytics:'📊', evolution:'🧬' };
   document.getElementById('stages').innerHTML = stages.map(s => {
